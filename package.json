@@ -1,0 +1,126 @@
+{
+  "name": "@hulla/control",
+  "version": "0.0.0",
+  "scripts": {
+    "build": "bunchee -m",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "lint": "eslint . --ext .js,.ts,.mjs,.mts",
+    "lint:fix": "eslint . --ext .js,.ts,.mjs,.mts --fix",
+    "format": "prettier --write \"**/*.{js,ts,mjs,mts,json,md}\"",
+    "format:check": "prettier --check \"**/*.{js,ts,mjs,mts,json,md}\"",
+    "prepare": "husky"
+  },
+  "author": {
+    "name": "Samuel Hulla",
+    "email": "hulla@hulla.dev",
+    "url": "https://hulla.dev"
+  },
+  "maintainers": [
+    "Samuel Hulla <hulla@hulla.dev>"
+  ],
+  "homepage": "https://hulla.dev/projects/args",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hulladev/args.git",
+    "directory": "packages/args"
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/es/index.mjs",
+  "types": "./dist/cjs/index.d.ts",
+  "exports": {
+    "import": {
+      "types": "./dist/es/index.d.mts",
+      "default": "./dist/es/index.mjs"
+    },
+    "require": {
+      "types": "./dist/cjs/index.d.ts",
+      "default": "./dist/cjs/index.js"
+    }
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.29.0",
+    "@types/node": "^24.0.7",
+    "@vitest/ui": "^3.2.4",
+    "bunchee": "^6.5.4",
+    "commitizen": "^4.3.1",
+    "cz-emoji": "1.3.2-canary.2",
+    "eslint": "^9.29.0",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-prettier": "^5.4.1",
+    "husky": "^9.1.7",
+    "prettier": "^3.5.3",
+    "prettier-plugin-organize-imports": "^4.1.0",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.34.0",
+    "vitest": "^3.2.4"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-emoji"
+    },
+    "cz-emoji": {
+      "skipScope": true,
+      "types": [
+        {
+          "emoji": "✅",
+          "code": ":white_check_mark: feat:",
+          "description": "a new functionality",
+          "name": "feat"
+        },
+        {
+          "emoji": "🐞",
+          "code": ":lady_beetle: fix:",
+          "description": "a bug fix",
+          "name": "fix"
+        },
+        {
+          "emoji": "🔧",
+          "code": ":wrench: update:",
+          "description": "a code change that neither fixes a bug nor adds a feature",
+          "name": "update"
+        },
+        {
+          "emoji": "📚",
+          "code": ":books: docs:",
+          "description": "documentations",
+          "name": "docs"
+        },
+        {
+          "emoji": "🧪",
+          "code": ":test_tube: tests:",
+          "description": "tests",
+          "name": "tests"
+        },
+        {
+          "emoji": "🪛",
+          "code": ":screwdriver: config:",
+          "description": "configuration files",
+          "name": "config"
+        },
+        {
+          "emoji": "🤖",
+          "code": ":robot: devops:",
+          "description": "ci/cd or other form of automation",
+          "name": "devops"
+        },
+        {
+          "emoji": "♻️",
+          "code": ":recycle: cleanup:",
+          "description": "code cleanup",
+          "name": "cleanup"
+        },
+        {
+          "emoji": "📦",
+          "code": ":package: release:",
+          "description": "new release bundle",
+          "name": "release"
+        }
+      ]
+    }
+  }
+}
