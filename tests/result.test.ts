@@ -38,7 +38,7 @@ describe('result function', () => {
   describe('custom tags', () => {
     it('should support tagOk for success values', () => {
       const value = 42
-      const r = result<number, Error, 'SUCCESS'>(value, { tagOk: 'SUCCESS' })
+      const r = result(value, { tagOk: 'SUCCESS' })
       expect(r.isOk()).toBe(true)
       expect(r.unwrap()).toBe(42)
       expect(r.tag).toBe('SUCCESS')
@@ -46,7 +46,7 @@ describe('result function', () => {
 
     it('should support tagError for error values', () => {
       const error = new Error('test error')
-      const r = result<any, Error, 'FAILURE'>(error, { tagError: 'FAILURE' })
+      const r = result(error, { tagError: 'FAILURE' })
       expect(r.isErr()).toBe(true)
       expect(r.unwrap()).toBe(error)
       expect(r.tag).toBe('FAILURE')
@@ -54,12 +54,12 @@ describe('result function', () => {
 
     it('should support both tagOk and tagError', () => {
       const value = 42
-      const successResult = result<number, Error, 'FAILURE', 'SUCCESS'>(value, { tagOk: 'SUCCESS', tagError: 'FAILURE' })
+      const successResult = result(value, { tagOk: 'SUCCESS', tagError: 'FAILURE' })
       expect(successResult.isOk()).toBe(true)
       expect(successResult.tag).toBe('SUCCESS')
 
       const error = new Error('test error')
-      const errorResult = result<any, Error, 'FAILURE', 'SUCCESS'>(error, { tagOk: 'SUCCESS', tagError: 'FAILURE' })
+      const errorResult = result(error, { tagOk: 'SUCCESS', tagError: 'FAILURE' })
       expect(errorResult.isErr()).toBe(true)
       expect(errorResult.tag).toBe('FAILURE')
     })
@@ -138,7 +138,7 @@ describe('result function', () => {
         v instanceof ValidationError || v instanceof NetworkError
 
       const error = new ValidationError('invalid input')
-      const r = result<any, AppError, 'APP_ERROR'>(error, {
+      const r = result<any, AppError, "APP_ERROR">(error, {
         isError: isAppError,
         tagError: 'APP_ERROR'
       })
