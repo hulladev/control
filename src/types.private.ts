@@ -213,3 +213,10 @@ export type ErrBaseResult<E> = BaseResult<never, E> & {
  * console.log(error.tag) // "VALIDATION"
  */
 export type WithTag<T, Tag extends string> = Omit<T, 'tag'> & { tag: Tag }
+
+
+export type ResultConfig<T, E extends Error, TagError extends string, TagOk extends string> = Partial<{
+  isError: (value: T | E) => value is E;
+  tagError: TagError;
+  tagOk: TagOk;
+}>
