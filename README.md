@@ -55,42 +55,36 @@ import { ok, err, type Result } from '@hulla/control'
 interface User {
   id: string
   name: string
-  email: string
+  age: number
 }
 
-async function fetchUser(id: string): Promise<Result<User, Error>> {
-  try {
-    const response = await fetch(`/api/users/${id}`)
-    if (!response.ok) {
-      return err(new Error(`Failed to fetch user: ${response.statusText}`))
-    } 
-    
-    const user = await response.json()
-    return ok(user)
-  } catch (error) {
-    return err(new Error(`Network error: ${error.message}`))
-  }
+function checkAge(user: User) {
+   if (user.age < 18) {
+      return err(new Error("You must be at least 18 to enter"))
+   }
+   return ok(user)
 }
 
-const userResult = await fetchUser("123") // Ok<User> | Err<Error>
+const checkedUser = checkAge(20) // Ok<User> | Err<Error>
 
 // Type safe handling
-if (userResult.isOk()) {
-  const user = userResult.value
+if (checkedUser.isOk()) {
+  const user = checkedUser.value
   console.log(`User ${user.name}, ${user.email}`)
 } else {
   // Can also use isErr instead of isOk
-  console.error(userResult.error.message)
+  const message = checkedUser.error
+  console.error(error)
 }
 
 // Use result pattern matching (rust-like) 🦀
-userResult.match(
+checkedUser.match(
   user => console.log(`User ${user.name}, ${user.email}`)
   error => console.error(error.message)
 )
 
 // Or pair handling (go-like) 🦫🌀
-const [user, error] = userResult.pair()
+const [user, error] = checkedUser.pair()
 if (error) // ...
 if (user) // ...
 ```
