@@ -20,11 +20,11 @@
   "maintainers": [
     "Samuel Hulla <hulla@hulla.dev>"
   ],
-  "homepage": "https://hulla.dev/projects/args",
+  "homepage": "https://hulla.dev/projects/control",
   "repository": {
     "type": "git",
-    "url": "https://github.com/hulladev/args.git",
-    "directory": "packages/args"
+    "url": "https://github.com/hulladev/control.git",
+    "directory": "packages/control"
   },
   "files": [
     "dist"

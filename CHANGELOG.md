@@ -1,5 +1,11 @@
 # @hulla/control
 
+## 0.0.2
+
+### Patch Changes
+
+- const type inference for values and errors
+
 ## 0.0.1
 
 ### Patch Changes
