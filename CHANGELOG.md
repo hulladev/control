@@ -1,5 +1,11 @@
 # @hulla/control
 
+## 0.0.3
+
+### Patch Changes
+
+- resolve node module path
+
 ## 0.0.2
 
 ### Patch Changes
