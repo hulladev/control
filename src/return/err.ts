@@ -38,9 +38,9 @@ import type { Err, Ok, Tagged } from '@/types.public'
  *   error => console.error(error)
  * )
  */
-export function err<E>(error: E): Err<E>
-export function err<E, const Tag extends string>(error: E, tag: Tag): Tagged<Err<E>, Tag>
-export function err<E, const Tag extends string>(error: E, tag?: Tag): Err<E> | Tagged<Err<E>, Tag> {
+export function err<const E>(error: E): Err<E>
+export function err<const E, const Tag extends string>(error: E, tag: Tag): Tagged<Err<E>, Tag>
+export function err<const E, const Tag extends string>(error: E, tag?: Tag): Err<E> | Tagged<Err<E>, Tag> {
   const methods: ErrBaseResult<E> = {
     isOk: (): this is Ok<never> => false,
     isErr: (): this is Err<E> => true,

@@ -39,7 +39,7 @@ import type { Ok, Err, Tagged } from '@/types.public'
  */
 
 // Overload 4: Both tags provided
-export function tcf<T, EC extends Error, ER extends Error | Promise<Error>, TagError extends string, TagOk extends string>({
+export function tcf<const T, EC extends Error, ER extends Error | Promise<Error>, TagError extends string, TagOk extends string>({
   // @ts-expect-error - Parameter renaming is required for reserved words
   try: tryFn,
   // @ts-expect-error - Parameter renaming is required for reserved words
@@ -57,7 +57,7 @@ export function tcf<T, EC extends Error, ER extends Error | Promise<Error>, TagE
 }): Tagged<Ok<T>, TagOk> | Tagged<Err<ER>, TagError>
 
 // Overload 1: No tags provided
-export function tcf<T, EC extends Error, ER extends Error | Promise<Error>>({
+export function tcf<const T, EC extends Error, ER extends Error | Promise<Error>>({
   // @ts-expect-error - Parameter renaming is required for reserved words
   try: tryFn,
   // @ts-expect-error - Parameter renaming is required for reserved words
@@ -71,7 +71,7 @@ export function tcf<T, EC extends Error, ER extends Error | Promise<Error>>({
 }): Ok<T> | Err<ER>
 
 // Overload 2: Only tagOk provided
-export function tcf<T, EC extends Error, ER extends Error | Promise<Error>, TagOk extends string>({
+export function tcf<const T, EC extends Error, ER extends Error | Promise<Error>, TagOk extends string>({
   // @ts-expect-error - Parameter renaming is required for reserved words
   try: tryFn,
   // @ts-expect-error - Parameter renaming is required for reserved words
@@ -87,7 +87,7 @@ export function tcf<T, EC extends Error, ER extends Error | Promise<Error>, TagO
 }): Tagged<Ok<T>, TagOk> | Err<ER>
 
 // Overload 3: Only tagError provided
-export function tcf<T, EC extends Error, ER extends Error | Promise<Error>, TagError extends string>({
+export function tcf<const T, EC extends Error, ER extends Error | Promise<Error>, TagError extends string>({
   // @ts-expect-error - Parameter renaming is required for reserved words
   try: tryFn,
   // @ts-expect-error - Parameter renaming is required for reserved words
@@ -104,7 +104,7 @@ export function tcf<T, EC extends Error, ER extends Error | Promise<Error>, TagE
 
 
 // Implementation
-export function tcf<T, EC extends Error, ER extends Error | Promise<Error>, TagError extends string = "error", TagOk extends string = "ok">({
+export function tcf<const T, EC extends Error, ER extends Error | Promise<Error>, TagError extends string = "error", TagOk extends string = "ok">({
   try: tryFn,
   catch: catchFn,
   finally: finallyFn,

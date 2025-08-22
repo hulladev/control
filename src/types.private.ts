@@ -102,7 +102,7 @@ export type OkBaseResult<T> = BaseResult<T, never> & {
    *   () => 0
    * ) // doubled = 10
    */
-  match: <ROk, RErr>(ok: (value: Awaited<T>) => ROk, _err?: (error: never) => RErr) => T extends Promise<any> ? Promise<ROk> : ROk
+  match: <const ROk, const RErr>(ok: (value: Awaited<T>) => ROk, _err?: (error: never) => RErr) => T extends Promise<any> ? Promise<ROk> : ROk
 
   /**
    * Converts the result to a tuple of [value, undefined].
@@ -164,7 +164,7 @@ export type ErrBaseResult<E> = BaseResult<never, E> & {
    *   async error => `Error: ${error.message}`
    * ) // message = "Error: failed"
    */
-  match: <ROk, RErr>(_ok: (value: never) => ROk, err: (error: Awaited<E>) => RErr) => E extends Promise<any> ? Promise<RErr> : RErr
+  match: <const ROk, const RErr>(_ok: (value: never) => ROk, err: (error: Awaited<E>) => RErr) => E extends Promise<any> ? Promise<RErr> : RErr
 
   /**
    * Converts the result to a tuple of [undefined, error].

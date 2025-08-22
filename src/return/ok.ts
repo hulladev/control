@@ -48,9 +48,9 @@ import type { Err, Ok, Tagged } from '@/types.public'
  * const unwrapped = result.unwrap()
  * console.log(unwrapped) // "success"
  */
-export function ok<T>(value: T): Ok<T>
-export function ok<T, const Tag extends string>(value: T, tag: Tag): Tagged<Ok<T>, Tag>
-export function ok<T, const Tag extends string>(value: T, tag?: Tag): Ok<T> | Tagged<Ok<T>, Tag> {
+export function ok<const T>(value: T): Ok<T>
+export function ok<const T, const Tag extends string>(value: T, tag: Tag): Tagged<Ok<T>, Tag>
+export function ok<const T, const Tag extends string>(value: T, tag?: Tag): Ok<T> | Tagged<Ok<T>, Tag> {
   const methods: OkBaseResult<T> = {
     isOk: (): this is Ok<T> => true,
     isErr: (): this is Err<never> => false,
