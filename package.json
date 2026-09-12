@@ -6,11 +6,18 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
-    "lint": "eslint . --ext .js,.ts,.mjs,.mts",
-    "lint:fix": "eslint . --ext .js,.ts,.mjs,.mts --fix",
-    "format": "prettier --write \"**/*.{js,ts,mjs,mts,json,md}\"",
-    "format:check": "prettier --check \"**/*.{js,ts,mjs,mts,json,md}\"",
-    "prepare": "husky"
+    "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "husky",
+    "typecheck": "tsc --noEmit",
+    "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test:run && pnpm build && pnpm test:package",
+    "test:package": "node scripts/check-package.mjs",
+    "prepublishOnly": "pnpm check",
+    "changeset": "changeset",
+    "version:packages": "changeset version",
+    "commit": "cz"
   },
   "author": {
     "name": "Samuel Hulla",
@@ -23,8 +30,7 @@
   "homepage": "https://hulla.dev/projects/control",
   "repository": {
     "type": "git",
-    "url": "https://github.com/hulladev/control.git",
-    "directory": "packages/control"
+    "url": "https://github.com/hulladev/control.git"
   },
   "files": [
     "dist"
@@ -43,22 +49,22 @@
     }
   },
   "devDependencies": {
-    "@changesets/cli": "^2.29.5",
-    "@eslint/js": "^9.29.0",
-    "@types/node": "^24.0.7",
-    "@vitest/ui": "^3.2.4",
-    "bunchee": "^6.5.4",
-    "commitizen": "^4.3.1",
+    "@changesets/cli": "^2.31.1",
+    "@commitlint/cli": "^19.8.1",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.13.4",
+    "@vitest/ui": "^5.0.0",
+    "bunchee": "^6.12.2",
+    "commitizen": "^4.3.2",
     "cz-emoji": "1.3.2-canary.2",
-    "eslint": "^9.29.0",
-    "eslint-config-prettier": "^10.1.5",
-    "eslint-plugin-prettier": "^5.4.1",
+    "eslint": "^10.10.0",
+    "eslint-config-prettier": "^10.1.8",
     "husky": "^9.1.7",
-    "prettier": "^3.5.3",
-    "prettier-plugin-organize-imports": "^4.1.0",
-    "typescript": "^5.8.3",
-    "typescript-eslint": "^8.34.0",
-    "vitest": "^3.2.4"
+    "prettier": "^3.9.6",
+    "prettier-plugin-organize-imports": "^4.3.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.70.0",
+    "vitest": "^5.0.0"
   },
   "config": {
     "commitizen": {
@@ -122,6 +128,12 @@
           "name": "release"
         }
       ]
+    }
+  },
+  "packageManager": "pnpm@10.14.0",
+  "pnpm": {
+    "overrides": {
+      "external-editor>tmp": "^0.2.6"
     }
   }
 }

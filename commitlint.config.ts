@@ -1,34 +1,20 @@
-import pkg from "./package.json"
-
-// Check if the user has configured the package to use conventional commits.
-// @ts-expect-error package.json is not typed.
-const isConventional = pkg.config ? pkg.config["cz-emoji"]?.conventional : false
-
 // Regex for default and conventional commits.
 const RE_DEFAULT_COMMIT =
-  /^(?::.*:|(?:\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff]))\s(?<emoji>\((?<scope>.*)\)\s)?.*$/gm
-const RE_CONVENTIONAL_COMMIT =
-  /^^(?<type>\w+)(?:\((?<scope>\w+)\))?\s(?<emoji>:.*:|(?:\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff]))\s.*$/gm
-
+  /^(?::.*:|(?:\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff]))\s(?<emoji>\((?<scope>.*)\)\s)?.*$/;
 export default {
   rules: {
-    "cz-emoji": [2, "always"],
+    'cz-emoji': [2, 'always'],
   },
   plugins: [
     {
       rules: {
-        "cz-emoji": ({ raw }) => {
-          const isValid = isConventional
-            ? RE_CONVENTIONAL_COMMIT.test(raw)
-            : RE_DEFAULT_COMMIT.test(raw)
+        'cz-emoji': ({ header }: { header: string | null }) => {
+          const isValid = RE_DEFAULT_COMMIT.test(header ?? '');
+          const message = 'Your commit message should be: <emoji> (<scope>)?: <subject>';
 
-          const message = isConventional
-            ? `Your commit message should follow conventional commit format.`
-            : `Your commit message should be: <emoji> (<scope>)?: <subject>`
-
-          return [isValid, message]
+          return [isValid, message];
         },
       },
     },
   ],
-}
+};
