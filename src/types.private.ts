@@ -76,6 +76,17 @@ export type BaseResult<T, E, Tag extends string = string> = {
  * @template T - The type of the success value
  */
 export type OkBaseResult<T, Tag extends string = string> = BaseResult<T, never, Tag> & {
+  /**
+   * Transform success, preserving the tag. Promise payloads are resolved before
+   * mapping; asynchronous output stays wrapped for further chaining.
+   * Thrown exceptions and rejected promises propagate, as with match().
+   */
+  map: <const R>(
+    transform: (value: Awaited<T>) => R,
+  ) => Ok<T extends PromiseLike<unknown> ? Promise<Awaited<R>> : R, Tag>;
+
+  /** Leave this success unchanged without calling the error mapper. */
+  mapErr: <const R>(transform: (error: never) => R) => Ok<T, Tag>;
 
   /**
    * Pattern matches on the result, transforming the success value.
@@ -142,6 +153,17 @@ export type OkBaseResult<T, Tag extends string = string> = BaseResult<T, never, 
  * @template E - The type of the error value
  */
 export type ErrBaseResult<E, Tag extends string = string> = BaseResult<never, E, Tag> & {
+  /** Leave this error unchanged without calling the success mapper. */
+  map: <const R>(transform: (value: never) => R) => Err<E, Tag>;
+
+  /**
+   * Transform failure, preserving the tag. Promise payloads are resolved before
+   * mapping; asynchronous output stays wrapped for further chaining.
+   * Thrown exceptions and rejected promises propagate, as with match().
+   */
+  mapErr: <const R>(
+    transform: (error: Awaited<E>) => R,
+  ) => Err<E extends PromiseLike<unknown> ? Promise<Awaited<R>> : R, Tag>;
 
   /**
    * Pattern matches on the result, transforming the error value.

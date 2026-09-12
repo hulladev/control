@@ -73,6 +73,8 @@ export function ok<const T, const Tag extends string>(value: T, tag?: Tag): Ok<T
           : [value, undefined]
       ) as T extends PromiseLike<unknown> ? Promise<[Awaited<T>, undefined]> : [T, undefined];
     },
+    map: (transform) => ok(methods.match(transform), result.tag),
+    mapErr: () => result,
     unwrap: () => value,
   };
   const result: Ok<T, Tag | 'ok'> = { ...methods, value, tag: tag ?? DEFAULT_TAG_OK };

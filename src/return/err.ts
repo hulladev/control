@@ -63,6 +63,12 @@ export function err<const E, const Tag extends string>(error: E, tag?: Tag): Err
           : [undefined, error]
       ) as E extends PromiseLike<unknown> ? Promise<[undefined, Awaited<E>]> : [undefined, E];
     },
+    map: () => result,
+    mapErr: (transform) =>
+      err(
+        methods.match(() => undefined, transform),
+        result.tag,
+      ),
     unwrap: () => error,
   };
   const result: Err<E, Tag | 'error'> = { ...methods, error, tag: tag ?? DEFAULT_TAG_ERROR };
