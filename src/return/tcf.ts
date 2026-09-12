@@ -1,164 +1,112 @@
-import { err } from './err'
-import { ok } from './ok'
-import type { Ok, Err, Tagged } from '@/types.public'
+import { isPromiseLike } from '@/lib/isPromiseLike';
+import type { Err, Ok, Result } from '@/types.public';
+import { err } from './err';
+import { ok } from './ok';
+
+type Outcome<T, E, TagOk extends string, TagError extends string> =
+  | (T extends PromiseLike<unknown>
+      ? Promise<Result<Awaited<T>, Awaited<E>, TagOk, TagError>>
+      : Ok<T, TagOk>)
+  | (E extends PromiseLike<unknown> ? Promise<Err<Awaited<E>, TagError>> : Err<E, TagError>);
+
+type WithCleanup<R, F> = F extends PromiseLike<unknown> ? Promise<Awaited<R>> : R;
+
+// Internal branch shape; public overloads preserve payload types and result methods.
+type ResultShape = { tag: string; value: unknown } | { tag: string; error: unknown };
+
+type Callbacks<T, EC, ER, F> = {
+  try: () => T;
+  catch: (error: EC) => ER;
+  finally?: () => F;
+};
 
 /**
- * A functional try-catch-finally wrapper that returns a Result type.
- * 
- * This function provides a type-safe way to handle errors by wrapping a try-catch-finally block
- * in a Result type. It supports both synchronous and asynchronous error handling, custom error
- * transformations, and optional tagging of success and error results.
- * 
- * @template T - The type of the success value
- * @template EC - The type of error that might be caught (must extend Error)
- * @template ER - The type of error after transformation (must extend Error or Promise<Error>)
- * @template TagError - Optional string literal type for error tagging
- * @template TagOk - Optional string literal type for success tagging
- * 
- * @example
- * // Basic usage
- * const result = tcf({
- *   try: () => JSON.parse('{"valid": "json"}'),
- *   catch: (error: SyntaxError) => new Error(`Parse failed: ${error.message}`),
- * })
- * 
- * // With custom tags and finally block
- * const result = tcf({
- *   try: () => fetchData(),
- *   catch: (error: NetworkError) => new ValidationError(error.message),
- *   finally: () => cleanup(),
- *   tagOk: "FETCH_SUCCESS",
- *   tagError: "FETCH_ERROR"
- * })
- * 
- * // Pattern matching the result
- * result.match(
- *   value => console.log("Success:", value),
- *   error => console.error("Failed:", error)
- * )
+ * Typed try/catch/finally. Synchronous callbacks return a Result immediately;
+ * promises from any callback are awaited. Use await tcf(...) for async work.
+ * Catch receives unknown by default, since JavaScript can throw any value.
+ * Exceptions from catch or finally propagate as in native try/catch/finally.
  */
+export function tcf<const T, EC = unknown, ER extends Error | PromiseLike<Error> = Error, F = void>(
+  options: Callbacks<T, EC, ER, F> & { tagError?: never; tagOk?: never },
+): WithCleanup<Outcome<T, ER, 'ok', 'error'>, F>;
+export function tcf<
+  const T,
+  EC = unknown,
+  ER extends Error | PromiseLike<Error> = Error,
+  const TagError extends string = 'error',
+  const TagOk extends string = 'ok',
+  F = void,
+>(
+  options: Callbacks<T, EC, ER, F> & { tagError: TagError; tagOk: TagOk },
+): WithCleanup<Outcome<T, ER, TagOk, TagError>, F>;
+export function tcf<
+  const T,
+  EC = unknown,
+  ER extends Error | PromiseLike<Error> = Error,
+  const TagError extends string = 'error',
+  F = void,
+>(
+  options: Callbacks<T, EC, ER, F> & { tagError: TagError; tagOk?: never },
+): WithCleanup<Outcome<T, ER, 'ok', TagError>, F>;
+export function tcf<
+  const T,
+  EC = unknown,
+  ER extends Error | PromiseLike<Error> = Error,
+  const TagOk extends string = 'ok',
+  F = void,
+>(
+  options: Callbacks<T, EC, ER, F> & { tagOk: TagOk; tagError?: never },
+): WithCleanup<Outcome<T, ER, TagOk, 'error'>, F>;
+export function tcf<
+  const T,
+  EC = unknown,
+  ER extends Error | PromiseLike<Error> = Error,
+  const TagError extends string = 'error',
+  const TagOk extends string = 'ok',
+  F = void,
+>(
+  options: Callbacks<T, EC, ER, F> & { tagError?: TagError; tagOk?: TagOk },
+): WithCleanup<Outcome<T, ER, TagOk | 'ok', TagError | 'error'>, F>;
+export function tcf(options: {
+  try: () => unknown;
+  catch: (error: never) => Error | PromiseLike<Error>;
+  finally?: () => unknown;
+  tagError?: string;
+  tagOk?: string;
+}): ResultShape | Promise<ResultShape> {
+  const onError = (error: unknown) => {
+    const mapped = options.catch(error as never);
+    return isPromiseLike(mapped)
+      ? Promise.resolve(mapped).then((value) => err(value, options.tagError))
+      : err(mapped, options.tagError);
+  };
+  const run = () => {
+    try {
+      const value = options.try();
+      return isPromiseLike(value)
+        ? Promise.resolve(value).then((value) => ok(value, options.tagOk), onError)
+        : ok(value, options.tagOk);
+    } catch (error) {
+      return onError(error);
+    }
+  };
 
-// Overload 4: Both tags provided
-export function tcf<const T, EC extends Error, ER extends Error | Promise<Error>, TagError extends string, TagOk extends string>({
-  // @ts-expect-error - Parameter renaming is required for reserved words
-  try: tryFn,
-  // @ts-expect-error - Parameter renaming is required for reserved words
-  catch: catchFn,
-  // @ts-expect-error - Parameter renaming is required for reserved words
-  finally: finallyFn,
-  tagError,
-  tagOk,
-}: {
-  try: () => T
-  catch: (error: EC) => ER
-  finally?: () => unknown
-  tagError: TagError
-  tagOk: TagOk
-}): Tagged<Ok<T>, TagOk> | Tagged<Err<ER>, TagError>
-
-// Overload 1: No tags provided
-export function tcf<const T, EC extends Error, ER extends Error | Promise<Error>>({
-  // @ts-expect-error - Parameter renaming is required for reserved words
-  try: tryFn,
-  // @ts-expect-error - Parameter renaming is required for reserved words
-  catch: catchFn,
-  // @ts-expect-error - Parameter renaming is required for reserved words
-  finally: finallyFn,
-}: {
-  try: () => T
-  catch: (error: EC) => ER
-  finally?: () => unknown
-}): Ok<T> | Err<ER>
-
-// Overload 2: Only tagOk provided
-export function tcf<const T, EC extends Error, ER extends Error | Promise<Error>, TagOk extends string>({
-  // @ts-expect-error - Parameter renaming is required for reserved words
-  try: tryFn,
-  // @ts-expect-error - Parameter renaming is required for reserved words
-  catch: catchFn,
-  // @ts-expect-error - Parameter renaming is required for reserved words
-  finally: finallyFn,
-  tagOk,
-}: {
-  try: () => T
-  catch: (error: EC) => ER
-  finally?: () => unknown
-  tagOk: TagOk
-}): Tagged<Ok<T>, TagOk> | Err<ER>
-
-// Overload 3: Only tagError provided
-export function tcf<const T, EC extends Error, ER extends Error | Promise<Error>, TagError extends string>({
-  // @ts-expect-error - Parameter renaming is required for reserved words
-  try: tryFn,
-  // @ts-expect-error - Parameter renaming is required for reserved words
-  catch: catchFn,
-  // @ts-expect-error - Parameter renaming is required for reserved words
-  finally: finallyFn,
-  tagError,
-}: {
-  try: () => T
-  catch: (error: EC) => ER
-  finally?: () => unknown
-  tagError: TagError
-}): Ok<T> | Tagged<Err<ER>, TagError>
-
-
-// Implementation
-export function tcf<const T, EC extends Error, ER extends Error | Promise<Error>, TagError extends string = "error", TagOk extends string = "ok">({
-  try: tryFn,
-  catch: catchFn,
-  finally: finallyFn,
-  tagError,
-  tagOk,
-}: {
-  try: () => T
-  catch: (error: EC) => ER
-  finally?: () => unknown
-  tagError?: TagError
-  tagOk?: TagOk
-}): Ok<T> | Err<ER> | Tagged<Ok<T>, TagOk> | Tagged<Err<ER>, TagError> {
+  let outcome;
   try {
-    if (tagOk === undefined) {
-      return ok(tryFn()) as Ok<T>
-    }
-    return ok(tryFn(), tagOk) as Tagged<Ok<T>, TagOk>
+    outcome = run();
   } catch (error) {
-    if (tagError === undefined) {
-      return err(catchFn(error as EC)) as Err<ER>
+    // A synchronous failure in catch still runs cleanup, exactly once.
+    const cleanup = options.finally?.();
+    if (isPromiseLike(cleanup)) {
+      return Promise.resolve(cleanup).then(() => {
+        throw error;
+      });
     }
-    return err(catchFn(error as EC), tagError) as Tagged<Err<ER>, TagError>
-  } finally {
-    finallyFn?.()
+    throw error;
   }
+  if (isPromiseLike(outcome)) {
+    return Promise.resolve(outcome).finally(options.finally);
+  }
+  const cleanup = options.finally?.();
+  return isPromiseLike(cleanup) ? Promise.resolve(cleanup).then(() => outcome) : outcome;
 }
-
-/**
- * Creates a Result from a value that might be an error.
- * 
- * This function provides a convenient way to create a Result type from a value
- * that might be either a success value or an error. It uses a type guard to
- * determine if the value is an error, and supports custom tagging.
- * 
- * @template T - The type of the success value
- * @template E - The type of the error value (must extend Error)
- * @template TagError - Optional string literal type for error tagging
- * @template TagOk - Optional string literal type for success tagging
- * 
- * @param value - The value to wrap in a Result
- * @param config - Optional configuration object
- * @param config.isError - Custom type guard for error detection
- * @param config.tagError - Custom tag for error results
- * @param config.tagOk - Custom tag for success results
- * 
- * @example
- * // Basic usage
- * const data = await fetchData()
- * const result = result(data)
- * 
- * // With custom error detection
- * const result = result(value, {
- *   isError: (v): v is CustomError => v instanceof CustomError,
- *   tagOk: "VALID_DATA",
- *   tagError: "INVALID_DATA"
- * })
- */
