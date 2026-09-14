@@ -81,7 +81,12 @@ const message = calculateTotal([]).match(
 ); // string
 
 // Note: You can also return void and just execute some logic in match
-// so you don't have to strictly return value to a variable
+// so you don't have to strictly return value to a variable, i.e.
+
+calculateTotal(items).match(
+  (total) => payments.process(total)
+  (error) => analytics.log(error)
+)
 ```
 
 Use `pair()` when tuple destructuring is more convenient, such as at an integration
