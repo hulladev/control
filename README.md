@@ -2,6 +2,15 @@
 
 A small TypeScript library for functional error handling with success and error results.
 
+## Features
+
+- 🎯 Type-safe error handling with the `Result<T, E>` type
+- 🔄 Functional transformations with pattern matching, `map()`, and `mapErr()`
+- ⚡ Support for both synchronous and asynchronous operations
+- 🏷️ Custom tagging for better error categorization
+- 🔍 Comprehensive TypeScript type definitions
+- 🧪 Well-tested and production-ready
+
 ```sh
 pnpm add @hulla/control
 ```
@@ -10,37 +19,88 @@ Also available through npm, Yarn, Bun, and Deno's `npm:@hulla/control` imports.
 
 ## Basic usage
 
+A `Result<T, E>` represents one of two outcomes: `Ok<T>` contains a success value and
+`Err<E>` contains an error. Functions return either branch explicitly, so callers can
+handle expected failures without `throw` and `catch`.
+
 ```typescript
 import { err, ok, type Result } from '@hulla/control';
 
-interface User {
-  id: string;
-  name: string;
-  age: number;
+interface CartItem {
+  price: number;
+  quantity: number;
 }
 
-function checkAge(user: User): Result<User, Error> {
-  if (user.age < 18) {
-    return err(new Error('You must be at least 18 to enter'));
+type CheckoutError = {
+  code: 'EMPTY_CART' | 'INVALID_QUANTITY';
+  message: string;
+};
+
+function calculateTotal(items: CartItem[]): Result<number, CheckoutError> {
+  if (items.length === 0) {
+    return err({ code: 'EMPTY_CART', message: 'Add an item before checking out' });
   }
-  return ok(user);
-}
 
-const checked = checkAge({ id: '1', name: 'Sam', age: 20 });
-if (checked.isOk()) {
-  console.log(checked.value.name);
+  if (items.some((item) => item.quantity < 1)) {
+    return err({ code: 'INVALID_QUANTITY', message: 'Quantities must be positive' });
+  }
+
+  return ok(items.reduce((total, item) => total + item.price * item.quantity, 0));
+}
+```
+
+Choose the handling style that best fits the caller. Use a type guard when each branch
+needs its own control flow. Both `isOk()` and `isErr()` narrow the result for TypeScript:
+
+```typescript
+const total = calculateTotal([{ price: 12.5, quantity: 2 }]);
+
+if (total.isErr()) {
+  console.error(total.error.message);
 } else {
-  console.error(checked.error.message);
+  console.log(`Total: $${total.value.toFixed(2)}`);
 }
+```
 
-const message = checked.match(
-  (user) => `Welcome, ${user.name}`,
-  (error) => error.message,
+Use `match()` when both branches should produce one value:
+
+```typescript
+const message = calculateTotal([]).match(
+  (total) => `Total: $${total.toFixed(2)}`,
+  (error) => `Cannot check out: ${error.message}`,
 );
 ```
 
-`isOk()` and `isErr()` narrow the result. The default tags are `'ok'` and `'error'`.
-Success and error payloads may have overlapping types: `Result<string, string>` is valid.
+Use `pair()` when tuple destructuring is more convenient, such as at an integration
+boundary:
+
+```typescript
+const [value, error] = calculateTotal([{ price: 12.5, quantity: 2 }]).pair();
+
+if (error !== undefined) {
+  console.error(error.message);
+} else {
+  console.log(`Sending $${value.toFixed(2)} to the payment provider`);
+}
+```
+
+Results can also be transformed without handling them yet. `map()` changes only the
+success value, while `mapErr()` changes only the error:
+
+```typescript
+const displayTotal = calculateTotal([{ price: 12.5, quantity: 2 }])
+  .map((total) => `$${total.toFixed(2)}`)
+  .mapErr((error) => `[${error.code}] ${error.message}`);
+// Result<string, string>
+```
+
+Finally, `unwrap()` reads the contained payload directly. It returns either the value
+or the error and never throws, so prefer one of the narrowing or matching approaches
+when the two payload types need different handling.
+
+The default tags are `'ok'` and `'error'`. Success and error payloads may overlap:
+`Result<string, string>` is valid because the branch, rather than the payload type,
+distinguishes them.
 
 ## Try, catch, finally
 
@@ -74,12 +134,6 @@ downloaded.match(
 Catch input defaults to `unknown`, because JavaScript can throw any value. Narrow it before accessing error properties. Explicit catch parameter annotations remain supported when you know the throwing code's contract. The catch callback must return an `Error` (or a promise of one).
 
 Errors thrown or rejected by `catch` and `finally` propagate to the caller, just as in native try/catch/finally. Cleanup errors override an earlier outcome. Use `await tcf(...)` whenever a callback can be asynchronous: a non-async function declared to return a promise can still throw synchronously, so the inferred type may include both a result and a promise.
-
-### Migrating from 0.0.3
-
-Previously, `tcf({ try: async ... })` returned `Ok<Promise<T>>`, missed rejections, and ran cleanup before the operation completed. Await `tcf(...)` before calling result methods now. Asynchronous catch and finally callbacks also require awaiting the call. Synchronous calls retain their immediate result shape.
-
-The default tag types now match the existing runtime strings (`'ok'` / `'error'`), replacing the incorrect `'Ok'` / `'Err'` declarations.
 
 ## Convert a value or error
 
