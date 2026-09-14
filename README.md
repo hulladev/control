@@ -53,11 +53,13 @@ Choose the handling style that best fits the caller. Use a type guard when each 
 needs its own control flow. Both `isOk()` and `isErr()` narrow the result for TypeScript:
 
 ```typescript
-const total = calculateTotal([{ price: 12.5, quantity: 2 }]);
+const total = calculateTotal([{ price: 12.5, quantity: 2 }]); // Result<number, CheckoutError>
 
 if (total.isErr()) {
+  // total: Err<CheckoutError>
   console.error(total.error.message);
 } else {
+  // total: Ok<number>
   console.log(`Total: $${total.value.toFixed(2)}`);
 }
 ```
@@ -68,7 +70,7 @@ Use `match()` when both branches should produce one value:
 const message = calculateTotal([]).match(
   (total) => `Total: $${total.toFixed(2)}`,
   (error) => `Cannot check out: ${error.message}`,
-);
+); // string
 ```
 
 Use `pair()` when tuple destructuring is more convenient, such as at an integration
@@ -76,6 +78,7 @@ boundary:
 
 ```typescript
 const [value, error] = calculateTotal([{ price: 12.5, quantity: 2 }]).pair();
+// value: number | undefined; error: CheckoutError | undefined
 
 if (error !== undefined) {
   console.error(error.message);
