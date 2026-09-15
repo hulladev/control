@@ -31,12 +31,12 @@ interface CartItem {
   quantity: number;
 }
 
-type CheckoutError = {
+type CartError = {
   code: 'EMPTY_CART' | 'INVALID_QUANTITY';
   message: string;
 };
 
-function calculateTotal(items: CartItem[]): Result<number, CheckoutError> {
+function calculateTotal(items: CartItem[]): Result<number, CartError> {
   if (items.length === 0) {
     return err({ code: 'EMPTY_CART', message: 'Add an item before checking out' });
   }
@@ -53,15 +53,23 @@ Choose the handling style that best fits the caller. Use a type guard when each 
 needs its own control flow. Both `isOk()` and `isErr()` narrow the result for TypeScript:
 
 ```typescript
-const total = calculateTotal([{ price: 12.5, quantity: 2 }]); // Result<number, CheckoutError>
+const total = calculateTotal([{ price: 12.5, quantity: 2 }]); // Result<number, CartError>
 
 if (total.isErr()) {
-  // total: Err<CheckoutError>
+  // total: Err<CartError>
   console.error(total.error.message);
 } else {
   // total: Ok<number>
   console.log(`Total: $${total.value.toFixed(2)}`);
 }
+
+// or you could also do it opposite
+if (total.isOk()) {
+  // total: Ok<number>
+}
+// note you don't even need the "else {}" since it's outside of the "if isOk" block
+// total: Err<CartError>
+
 ```
 
 Use `match()` when both branches should produce one value:
@@ -71,6 +79,14 @@ const message = calculateTotal([]).match(
   (total) => `Total: $${total.toFixed(2)}`,
   (error) => `Cannot check out: ${error.message}`,
 ); // string
+
+// Note: You can also return void and just execute some logic in match
+// so you don't have to strictly return value to a variable, i.e.
+
+calculateTotal(items).match(
+  (total) => payments.process(total)
+  (error) => analytics.log(error)
+)
 ```
 
 Use `pair()` when tuple destructuring is more convenient, such as at an integration
@@ -78,7 +94,7 @@ boundary:
 
 ```typescript
 const [value, error] = calculateTotal([{ price: 12.5, quantity: 2 }]).pair();
-// value: number | undefined; error: CheckoutError | undefined
+// value: number | undefined; error: CartError | undefined
 
 if (error !== undefined) {
   console.error(error.message);
@@ -105,19 +121,24 @@ The default tags are `'ok'` and `'error'`. Success and error payloads may overla
 `Result<string, string>` is valid because the branch, rather than the payload type,
 distinguishes them.
 
-## Try, catch, finally
+## Handling throwable exceptions
+
+> There will also be cases, where you are not in full ownership of the error behaviour, as some operations _(like `JSON.parse` or `fetch`)_ have built in error throwing behaviour.
+> In this case you can use `tcf` - shorthand for `try, catch, finally`  - to handle these errors and transform them into a `Result<T, E>`
 
 `tcf()` accepts synchronous and asynchronous callbacks. Fully synchronous work returns a result immediately. A promise from `try`, `catch`, or `finally` is awaited before the returned promise settles. Cleanup runs once, after the operation and any error mapping complete.
 
 ```typescript
 import { tcf } from '@hulla/control';
 
+// synchronous
 const parsed = tcf({
-  try: (): unknown => JSON.parse('{"name":"Sam"}'),
+  try: () => JSON.parse('{"name":"Sam"}'),
   catch: (error) => new Error(`Invalid JSON: ${String(error)}`),
-});
-console.log(parsed.isOk()); // synchronous
+}); 
+console.log(parsed.isOk()); 
 
+// asynchronous
 const downloaded = await tcf({
   try: async () => {
     const response = await fetch('https://example.com/data.json');
@@ -126,12 +147,12 @@ const downloaded = await tcf({
   },
   catch: (error) => (error instanceof Error ? error : new Error(String(error))),
   finally: () => console.log('Request completed'),
-});
+}); // Result<string, Error>
 
 downloaded.match(
   (text) => console.log(text),
   (error) => console.error(error.message),
-);
+); // string
 ```
 
 Catch input defaults to `unknown`, because JavaScript can throw any value. Narrow it before accessing error properties. Explicit catch parameter annotations remain supported when you know the throwing code's contract. The catch callback must return an `Error` (or a promise of one).
@@ -152,6 +173,14 @@ function convert(value: string | Error) {
   }
   return converted;
 }
+
+const v = result(42) // Result<number, Error>
+v.isOk() // true
+
+const e = result(Error('example')) // Result<unknown, Error>
+e.isOk() // false
+
+// but obviously normally you would use this to pass a variable that can be both T | Error
 ```
 
 A custom `isError` type guard can override detection. By default, errors from a different JavaScript realm are not detected by `instanceof Error`; supply an appropriate guard when needed. `result()` does not execute functions or catch rejected promises; use `tcf()` for that.
