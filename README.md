@@ -135,8 +135,8 @@ import { tcf } from '@hulla/control';
 const parsed = tcf({
   try: () => JSON.parse('{"name":"Sam"}'),
   catch: (error) => new Error(`Invalid JSON: ${String(error)}`),
-}); 
-console.log(parsed.isOk()); 
+});
+console.log(parsed.isOk());
 
 // asynchronous
 const downloaded = await tcf({
