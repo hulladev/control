@@ -14,6 +14,7 @@ describe('ok', () => {
     const result = ok(1, 'number');
     expect(result.isOk()).toBe(true);
     expect(result.isErr()).toBe(false);
+    expect(result.tag).toBe('number');
     expect(result.match((v) => v)).toBe(1);
   });
 
@@ -23,9 +24,6 @@ describe('ok', () => {
     expect(result.isOk()).toBe(true);
     expect(result.isErr()).toBe(false);
     expect(await result.match((v) => v)).toBe(1);
-
-    const matched = await result.match((v) => v);
-    expect(matched).toBe(1);
 
     // Test chaining promises
     const chainedResult = ok(Promise.resolve(1));
