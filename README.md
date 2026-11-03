@@ -273,6 +273,16 @@ const originalPromise = wrapped.unwrap(); // unchanged Promise<number>
 | `pair()`                                           | Get a success/error tuple                                        |
 | `unwrap()`                                         | Read the original payload                                        |
 
+## AI agent guidance
+
+Install the [hulla-control skill](https://github.com/hulladev/skills/tree/main/skills/hulla-control) for package-specific guidance on Result branches, exception boundaries, transformations, and asynchronous payloads:
+
+```sh
+npx skills add hulladev/skills --skill hulla-control
+```
+
+Choose your coding agent in the installer. See [installation and version compatibility](https://hulla.dev/docs/cli/agent-skills) before adding or updating skills in your application.
+
 ## Development
 
 Use Node.js 22.13+ or 24 and pnpm 10.14.0 (pinned in `packageManager`).
