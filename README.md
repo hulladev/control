@@ -275,10 +275,10 @@ const originalPromise = wrapped.unwrap(); // unchanged Promise<number>
 
 ## AI agent guidance
 
-Install the [hulla-control skill](https://github.com/hulladev/skills/tree/main/skills/hulla-control) for package-specific guidance on Result branches, exception boundaries, transformations, and asynchronous payloads:
+Install the [@hulla/control skill](https://github.com/hulladev/skills/tree/main/skills/control) for package-specific guidance on Result branches, exception boundaries, transformations, and asynchronous payloads:
 
 ```sh
-npx skills add hulladev/skills --skill hulla-control
+npx skills add hulladev/skills --skill control
 ```
 
 Choose your coding agent in the installer. See [installation and version compatibility](https://hulla.dev/docs/cli/agent-skills) before adding or updating skills in your application.
