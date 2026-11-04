@@ -69,7 +69,6 @@ if (total.isOk()) {
 }
 // note you don't even need the "else {}" since it's outside of the "if isOk" block
 // total: Err<CartError>
-
 ```
 
 Use `match()` when both branches should produce one value:
@@ -124,7 +123,7 @@ distinguishes them.
 ## Handling throwable exceptions
 
 > There will also be cases, where you are not in full ownership of the error behaviour, as some operations _(like `JSON.parse` or `fetch`)_ have built in error throwing behaviour.
-> In this case you can use `tcf` - shorthand for `try, catch, finally`  - to handle these errors and transform them into a `Result<T, E>`
+> In this case you can use `tcf` - shorthand for `try, catch, finally` - to handle these errors and transform them into a `Result<T, E>`
 
 `tcf()` accepts synchronous and asynchronous callbacks. Fully synchronous work returns a result immediately. A promise from `try`, `catch`, or `finally` is awaited before the returned promise settles. Cleanup runs once, after the operation and any error mapping complete.
 
@@ -174,11 +173,11 @@ function convert(value: string | Error) {
   return converted;
 }
 
-const v = result(42) // Result<number, Error>
-v.isOk() // true
+const v = result(42); // Result<number, Error>
+v.isOk(); // true
 
-const e = result(Error('example')) // Result<unknown, Error>
-e.isOk() // false
+const e = result(Error('example')); // Result<unknown, Error>
+e.isOk(); // false
 
 // but obviously normally you would use this to pass a variable that can be both T | Error
 ```
@@ -306,3 +305,7 @@ Formatting runs separately from linting. Generated bundles, coverage, and the lo
 MIT — see [LICENSE](LICENSE).
 
 Samuel Hulla ([@hulladev](https://github.com/hulladev)).
+
+## Publishing
+
+See [the release workflow](docs/releasing.md) for changesets, version preparation, coordinated releases and npm trusted publishing.
