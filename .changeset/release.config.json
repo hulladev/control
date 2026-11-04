@@ -1,0 +1,8 @@
+{
+  "repository": "hulladev/control",
+  "title": "@hulla/control",
+  "packageManager": "pnpm",
+  "packages": ["."],
+  "smokeImports": ["@hulla/control"],
+  "smokeDependencies": []
+}
