@@ -1,6 +1,6 @@
 {
   "name": "@hulla/control",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "scripts": {
     "build": "bunchee -m",
     "test": "vitest",
@@ -80,55 +80,55 @@
       "skipScope": true,
       "types": [
         {
-          "emoji": "\u2705",
+          "emoji": "✅",
           "code": ":white_check_mark: feat:",
           "description": "a new functionality",
           "name": "feat"
         },
         {
-          "emoji": "\ud83d\udc1e",
+          "emoji": "🐞",
           "code": ":lady_beetle: fix:",
           "description": "a bug fix",
           "name": "fix"
         },
         {
-          "emoji": "\ud83d\udd27",
+          "emoji": "🔧",
           "code": ":wrench: update:",
           "description": "a code change that neither fixes a bug nor adds a feature",
           "name": "update"
         },
         {
-          "emoji": "\ud83d\udcda",
+          "emoji": "📚",
           "code": ":books: docs:",
           "description": "documentations",
           "name": "docs"
         },
         {
-          "emoji": "\ud83e\uddea",
+          "emoji": "🧪",
           "code": ":test_tube: tests:",
           "description": "tests",
           "name": "tests"
         },
         {
-          "emoji": "\ud83e\ude9b",
+          "emoji": "🪛",
           "code": ":screwdriver: config:",
           "description": "configuration files",
           "name": "config"
         },
         {
-          "emoji": "\ud83e\udd16",
+          "emoji": "🤖",
           "code": ":robot: devops:",
           "description": "ci/cd or other form of automation",
           "name": "devops"
         },
         {
-          "emoji": "\u267b\ufe0f",
+          "emoji": "♻️",
           "code": ":recycle: cleanup:",
           "description": "code cleanup",
           "name": "cleanup"
         },
         {
-          "emoji": "\ud83d\udce6",
+          "emoji": "📦",
           "code": ":package: release:",
           "description": "new release bundle",
           "name": "release"
